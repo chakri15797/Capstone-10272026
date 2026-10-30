@@ -1,0 +1,37 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: readmission
+      MYSQL_USER: readmission_app
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+
+  api:
+    build: .
+    image: readmission-risk-api:metrics
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://readmission_app:${MYSQL_PASSWORD:?Set MYSQL_PASSWORD}@mysql:3306/readmission?charset=utf8mb4
+      APP_DATA_ENCRYPTION_KEY: ${APP_DATA_ENCRYPTION_KEY:?Set APP_DATA_ENCRYPTION_KEY}
+      DATA_RETENTION_DAYS: "30"
+      AUTH_BOOTSTRAP_ADMIN_USERNAME: ${AUTH_BOOTSTRAP_ADMIN_USERNAME:?Set AUTH_BOOTSTRAP_ADMIN_USERNAME}
+      AUTH_BOOTSTRAP_ADMIN_PASSWORD: ${AUTH_BOOTSTRAP_ADMIN_PASSWORD:?Set AUTH_BOOTSTRAP_ADMIN_PASSWORD}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

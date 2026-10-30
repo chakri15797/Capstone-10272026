@@ -1,7 +1,7 @@
 import json
-import os
 import time
 import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 from urllib.request import urlretrieve
@@ -270,17 +270,25 @@ def train_and_select_models(
 
         train_prob = model_pipeline.predict_proba(X_train)[:, 1]
         val_prob = model_pipeline.predict_proba(X_val)[:, 1]
+        test_prob = model_pipeline.predict_proba(X_test)[:, 1]
         train_pred = model_pipeline.predict(X_train)
         val_pred = model_pipeline.predict(X_val)
+        test_pred = model_pipeline.predict(X_test)
 
         model_metrics = {
             "train_metrics": _classification_metrics(y_train, train_pred, train_prob),
             "validation_metrics": _classification_metrics(y_val, val_pred, val_prob),
+            "test_metrics": _classification_metrics(
+                y_test,
+                test_pred,
+                test_prob,
+            ),
         }
         models[model_name] = {
             "pipeline": model_pipeline,
             "train_metrics": model_metrics["train_metrics"],
             "validation_metrics": model_metrics["validation_metrics"],
+            "test_metrics": model_metrics["test_metrics"],
         }
 
     best_model_name = max(
@@ -310,7 +318,14 @@ def train_and_select_models(
     final_metrics["validation_auc"] = float(models[best_model_name]["validation_metrics"]["roc_auc"])
 
     summary = {
-        "models": {name: {"train_metrics": m["train_metrics"], "validation_metrics": m["validation_metrics"]} for name, m in models.items()},
+        "models": {
+            name: {
+                "train_metrics": metrics["train_metrics"],
+                "validation_metrics": metrics["validation_metrics"],
+                "test_metrics": metrics["test_metrics"],
+            }
+            for name, metrics in models.items()
+        },
         "best_model_name": best_model_name,
         "best_model": retrained_pipeline,
         "test_metrics": final_metrics,
@@ -340,6 +355,16 @@ def save_evaluation_report(summary: Dict[str, object], output_path: str = "artif
         "best_model_name": summary["best_model_name"],
         "validation_auc": float(summary["validation_auc"]),
         "test_metrics": {k: float(v) if isinstance(v, (int, float, np.floating)) else v for k, v in summary["test_metrics"].items()},
+        "models": {
+            model_name: {
+                metric_name: {
+                    key: float(value) if isinstance(value, (int, float, np.floating)) else value
+                    for key, value in metrics.items()
+                }
+                for metric_name, metrics in model_metrics.items()
+            }
+            for model_name, model_metrics in summary["models"].items()
+        },
     }
 
     with report_path.open("w", encoding="utf-8") as f:
@@ -356,16 +381,19 @@ def run_training_pipeline(data_dir: str = "data") -> Dict[str, object]:
     plot_eda(df)
 
     summary = train_and_select_models(df, target_col="readmitted")
-    save_model_artifact(summary["best_model"])
-    save_evaluation_report(summary)
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    model_artifact = f"artifacts/readmission_model_{run_id}.joblib"
+    report_path = f"artifacts/readmission_model_{run_id}_evaluation.json"
+    save_model_artifact(summary["best_model"], model_artifact)
+    save_evaluation_report(summary, report_path)
 
     output = {
         "eda_summary": eda_summary,
         "selected_model": summary["best_model_name"],
         "validation_auc": summary["validation_auc"],
         "test_metrics": summary["test_metrics"],
-        "model_artifact": "artifacts/final_readmission_model.joblib",
-        "report_path": "artifacts/model_evaluation_report.json",
+        "model_artifact": model_artifact,
+        "report_path": report_path,
     }
     print("EDA summary:")
     print(eda_summary)

@@ -1,4 +1,9 @@
 .git/
+.env
+.run/
+artifacts/readmission_model_existing_20261029_175618.joblib
+artifacts/readmission_model_existing_20261029_175618_evaluation.json
+examples/readmission_probability_examples.json
 .pytest_cache/
 __pycache__/
 *.py[cod]

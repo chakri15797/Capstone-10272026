@@ -105,7 +105,7 @@ def _stop(record: Dict[str, Any], processes: List[Dict[str, Any]]) -> None:
 
 def main() -> int:
     if not STATE_FILE.exists():
-        print("No processes launched by start_all.py are recorded; nothing to stop.")
+        print("No processes launched by start_services.py are recorded; nothing to stop.")
         return 0
 
     try:
@@ -118,7 +118,7 @@ def main() -> int:
             _stop(record, processes)
 
         STATE_FILE.unlink()
-        print("Stopped the processes launched by start_all.py. Existing Kubernetes deployments were left running.")
+        print("Stopped the processes launched by start_services.py. Existing Kubernetes deployments were left running.")
         return 0
     except (OSError, subprocess.SubprocessError, RuntimeError, json.JSONDecodeError, KeyError, TypeError) as error:
         print(f"Could not stop all managed processes: {error}", file=sys.stderr)

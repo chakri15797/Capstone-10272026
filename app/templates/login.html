@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in · Readmission Risk</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            color: #1d2b3c;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(145deg, #f3f7fc, #e8eff8);
+        }
+        main {
+            width: min(100%, 420px);
+            padding: 36px;
+            background: white;
+            border: 1px solid #dfe8f2;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px #1f37501c;
+        }
+        h1 { margin: 0; color: #173b65; font-size: 25px; }
+        p { color: #718198; line-height: 1.55; }
+        label { display: block; margin: 18px 0 7px; font-weight: 600; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dce5ef;
+            border-radius: 8px;
+            font: inherit;
+        }
+        button {
+            width: 100%;
+            margin-top: 24px;
+            padding: 13px;
+            border: 0;
+            border-radius: 9px;
+            color: white;
+            background: #236eb5;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .message { color: #a32121; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Sign in</h1>
+    <p>Use your Readmission Risk account to continue.</p>
+    <p class="message" role="alert">__LOGIN_MESSAGE__</p>
+    <form method="post" action="/login">
+        <input type="hidden" name="csrf_token" value="__LOGIN_CSRF_TOKEN__">
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" required autofocus>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">Sign in</button>
+    </form>
+</main>
+</body>
+</html>

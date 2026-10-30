@@ -7,3 +7,7 @@ fastapi>=0.110.0
 uvicorn>=0.29.0
 python-multipart>=0.0.9
 prometheus-fastapi-instrumentator>=7.0.0
+prometheus-client>=0.20.0
+SQLAlchemy>=2.0.0
+PyMySQL>=1.1.0
+cryptography>=42.0.0

@@ -1,0 +1,43 @@
+name: Local CI
+
+on:
+  push:
+    branches:
+      - master
+      - chakri
+
+concurrency:
+  group: readmission-local-ci-cd
+  cancel-in-progress: false
+
+jobs:
+  verify-build-deploy:
+    if: github.repository == 'Krishna0312/Capstone-10272026'
+    runs-on:
+      - self-hosted
+      - windows
+      - x64
+    env:
+      IMAGE: readmission-risk-api:sha-${{ github.sha }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: python -m pytest
+
+      - name: Run Ruff
+        run: python -m ruff check .
+
+      - name: Build Docker image
+        run: docker build --tag "$env:IMAGE" .

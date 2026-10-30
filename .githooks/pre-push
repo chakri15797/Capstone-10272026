@@ -1,0 +1,47 @@
+#!/bin/sh
+set -eu
+
+branch=
+commit=
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    case "$remote_ref" in
+        refs/heads/master)
+            case "$local_sha" in
+                *[!0]*)
+                    if [ "$local_ref" != "refs/heads/master" ]; then
+                        echo "Push gate only supports pushing the local master branch to master." >&2
+                        exit 1
+                    fi
+                    if [ -n "$branch" ]; then
+                        echo "Push master separately so its deployment can be checked." >&2
+                        exit 1
+                    fi
+                    branch=master
+                    commit=$local_sha
+                    ;;
+            esac
+            ;;
+    esac
+done
+
+if [ -z "$branch" ]; then
+    exit 0
+fi
+
+repository=$(git rev-parse --show-toplevel)
+if [ -n "${PYTHON:-}" ] && command -v "$PYTHON" >/dev/null 2>&1; then
+    python_command=$PYTHON
+elif command -v python >/dev/null 2>&1 &&
+    python -c 'import sys; raise SystemExit(sys.version_info.major < 3)' >/dev/null 2>&1; then
+    python_command=python
+elif command -v python3 >/dev/null 2>&1; then
+    python_command=python3
+else
+    echo "The push gate requires Python 3 on PATH." >&2
+    exit 1
+fi
+
+"$python_command" "$repository/scripts/kubernetes_push_check.py" \
+    --branch "$branch" \
+    --commit "$commit"

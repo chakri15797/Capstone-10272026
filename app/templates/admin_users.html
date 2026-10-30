@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage accounts · Readmission Risk</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 32px 18px;
+            color: #1d2b3c;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f3f7fc;
+        }
+        main {
+            max-width: 900px;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border: 1px solid #dfe8f2;
+            border-radius: 16px;
+            box-shadow: 0 18px 50px #1f375014;
+        }
+        h1, h2 { color: #173b65; }
+        form.create-user {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            align-items: end;
+            gap: 12px;
+            padding: 18px;
+            background: #f8fafd;
+            border-radius: 12px;
+        }
+        label { display: grid; gap: 7px; font-weight: 600; }
+        input, select, button {
+            min-width: 0;
+            padding: 10px 12px;
+            border: 1px solid #dce5ef;
+            border-radius: 8px;
+            font: inherit;
+        }
+        button { color: white; background: #236eb5; border: 0; cursor: pointer; }
+        button:disabled { opacity: 0.55; cursor: not-allowed; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e6edf5; }
+        nav { display: flex; justify-content: space-between; gap: 16px; }
+        a { color: #236eb5; }
+        .inline-form { display: inline; }
+        .token-notice { margin: 20px 0; padding: 16px; background: #fff8df; border: 1px solid #ecd98e; border-radius: 10px; }
+        .token-notice code { display: block; overflow-wrap: anywhere; padding: 10px; background: white; }
+        @media (max-width: 560px) {
+            main { padding: 18px; overflow-x: auto; }
+            table { min-width: 520px; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <nav>
+        <a href="/">Prediction form</a>
+        <form method="post" action="/logout">
+            <input type="hidden" name="csrf_token" value="__CSRF_TOKEN__">
+            <button type="submit">Sign out</button>
+        </form>
+    </nav>
+    <h1>Account management</h1>
+    __API_TOKEN_NOTICE__
+    <h2>Create account</h2>
+    <form class="create-user" method="post" action="/admin/users">
+        <input type="hidden" name="csrf_token" value="__CSRF_TOKEN__">
+        <input type="hidden" name="action" value="create">
+        <label>Username
+            <input name="username" minlength="3" maxlength="64" required autocomplete="off">
+        </label>
+        <label>Temporary password
+            <input name="password" type="password" minlength="12" maxlength="128" required autocomplete="new-password">
+        </label>
+        <label>Role
+            <select name="role"><option value="user">User</option><option value="admin">Administrator</option></select>
+        </label>
+        <button type="submit">Create account</button>
+    </form>
+    <h2>Existing accounts</h2>
+    <table>
+        <thead><tr><th>Username</th><th>Role</th><th>Status</th><th>Access</th><th>Password</th><th>API tokens</th></tr></thead>
+        <tbody>__USER_ROWS__</tbody>
+    </table>
+</main>
+</body>
+</html>

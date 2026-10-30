@@ -3,5 +3,17 @@ venv/
 .run/
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+.env
 .DS_Store
 *.py[cod]
+artifacts/readmission_model_existing_20261029_175618.joblib
+artifacts/readmission_model_existing_20261029_175618_evaluation.json
+examples/readmission_probability_examples.json
